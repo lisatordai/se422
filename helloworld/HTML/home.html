@@ -1,0 +1,86 @@
+<!-- home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+
+    <script>
+      function filterImages() {
+        // Get the user input from the text box
+        var userInput = document.getElementById("imageSearch").value.toLowerCase();
+
+        // Get all the images on the page
+        var images = document.getElementsByTagName("img");
+
+        // Loop through each image
+        for (var i = 0; i < images.length; i++) {
+            // Get the image source and convert it to lowercase
+            var imageUrl = images[i].getAttribute("src").toLowerCase();
+            // Get the caption of the image
+            var caption = images[i].nextElementSibling;
+            
+            //checks if image has the substring of searched item in it
+            if (imageUrl.indexOf(userInput) !== -1) {
+                //if the image has the substring in it, shows it
+                images[i].style.display = "block";
+                //shows the caption/name of object
+                if (caption && caption.tagName.toLowerCase() === 'p') {
+                    caption.style.display = "block";
+                }
+            } else {
+                //if the image source does not have the substring, hides it
+                images[i].style.display = "none";
+                //hides caption/name of object
+                if (caption && caption.tagName.toLowerCase() === 'p') {
+                    caption.style.display = "none";
+                }
+            }
+        }
+    }
+    
+  </script>
+
+
+</head>
+<body>
+    <h1>Home Page</h1>
+    <p>Welcome!</p>
+
+    <h1>SE 422 Menu Options</h1>
+
+    
+    <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
+      <input type="file" name="file">
+      <button type="submit">Upload</button>
+    </form>
+
+    <form action="{{ url_for('home') }}" method="POST" style="display: flex; align-items: center;">
+      <label for="imageSearch">Search For Image:</label>
+      <input type="text" id="imageSearch" name="image" style="flex: 1; margin-right: 10px;"><br><br>
+      <button class="imageSearchButton" style="width: 25%;" onclick="filterImages(); return false;">Search</button>
+    </form>
+  
+  
+  
+    
+    <div>
+      {% for image in images %}
+      <div style="display: inline-block; margin: 10px">
+        <img
+          src="{{ image.url }}"
+          alt="{{ image.caption }}"
+          style="max-width: 300px; max-height: 300px"
+        />
+        <p>{{ image.caption }}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <form action="{{ url_for('login') }}" method="GET">
+        <button class="logoutButton">Logout</button>
+    </form>
+
+</body>
+</html>

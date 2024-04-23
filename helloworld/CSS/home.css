@@ -1,0 +1,19 @@
+.logoutButton {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: 2px solid #007bff; /* Add a solid border */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.logoutButton:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+    border-color: #0056b3; /* Change border color on hover */
+}
+
+.logoutButton:focus {
+    outline: none; /* Remove default focus outline */
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5); /* Add custom focus outline */
+}
