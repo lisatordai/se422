@@ -1,14 +1,22 @@
+# Commands
+# gcloud init
+# gcloud services enable appengine.googleapis.com
+# gcloud app deploy
+# gcloud app browse
+
+
+
+
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.utils import secure_filename
 import os
 import pymysql
 from google.cloud import storage
 
-application = Flask(__name__, template_folder="app/HTML")
+application = Flask(__name__, template_folder="HTML")
 application.secret_key = 'ben'
 
 # Database connection details
-# Modify these to your Cloud SQL instance details
 CLOUD_SQL_CONNECTION_NAME = 'se422-421121:us-central1:se422-sqlservers'
 DB_USER = 'user'
 DB_PASSWORD = 'pass'
@@ -19,12 +27,11 @@ BUCKET_NAME = 'photos_se422'
 
 # Function to get DB connection
 def get_db_connection():
-    db = pymysql.connect(host='localhost',
-                         user=DB_USER,
-                         password=DB_PASSWORD,
-                         db=DB_NAME,
-                         cursorclass=pymysql.cursors.DictCursor)
-    return db
+    return pymysql.connect(host='localhost',
+                           user=DB_USER,
+                           password=DB_PASSWORD,
+                           db=DB_NAME,
+                           cursorclass=pymysql.cursors.DictCursor)
 
 @application.route("/", methods=['GET', 'POST'])
 def login():
@@ -72,7 +79,7 @@ def new_account():
 def home():   
     try:
         storage_client = storage.Client()
-        bucket = storage_client.get_bucket(BUCKET_NAME)
+        bucket = storage_client.bucket(BUCKET_NAME)
         blobs = bucket.list_blobs()
 
         images = []
@@ -81,8 +88,8 @@ def home():
             caption = blob.name  # You may need to modify this depending on how your images are named
             images.append({'url': image_url, 'caption': caption})
     except Exception as e:
-        return render_template('home.html')
-        return f"Error: {str(e)}", 500
+        flash(f"Error: {str(e)}")
+        return render_template('home.html', images=[])
     return render_template('home.html', images=images)
 
 @application.route('/upload', methods=['POST'])
@@ -90,24 +97,25 @@ def upload_file():
     if request.method == 'POST':
         try:
             file = request.files['file']
-            if file and file.filename.endswith(('.jpg')):
-
+            if file and file.filename.endswith('.jpg'):
                 filename = secure_filename(file.filename)
                 temp_file_path = os.path.join('/tmp', filename)
                 file.save(temp_file_path)
 
                 storage_client = storage.Client()
-                bucket = storage_client.get_bucket(BUCKET_NAME)
+                bucket = storage_client.bucket(BUCKET_NAME)
                 blob = bucket.blob(filename)
                 blob.upload_from_filename(temp_file_path)
 
                 os.remove(temp_file_path)
-                
+                flash('File uploaded successfully!')
                 return redirect(url_for('home'))
             else:
-                return 'File format not supported!'
+                flash('File format not supported! Only JPG files are allowed.')
         except Exception as e:
-            return f'An error occurred: {e}'
+            flash(f'An error occurred: {e}')
+
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    application.run(host='0.0.0.0', port='8080', debug=True)
+    application.run(host='0.0.0.0', port=8080, debug=True)
